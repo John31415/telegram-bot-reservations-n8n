@@ -1,0 +1,265 @@
+{
+  "name": "WhatsApp Reservation DB Bot",
+  "nodes": [
+    {
+      "parameters": {
+        "updates": [
+          "message"
+        ],
+        "additionalFields": {
+          "userIds": "1608712151"
+        }
+      },
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1.5,
+      "position": [
+        0,
+        16
+      ],
+      "id": "07d5e8ce-d02b-489e-beae-139b24667049",
+      "name": "Telegram Trigger",
+      "webhookId": "7f67e88c-1849-4c79-9abd-731fcb0ed604",
+      "credentials": {
+        "telegramApi": {
+          "id": "qcNffm2ce4HHP6dX",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $('Telegram Trigger').item.json.message.text }}",
+        "options": {
+          "systemMessage": "=Eres un asistente inteligente y amable encargado de gestionar consultas de una base de datos PostgreSQL para un sistema de reservaciones. Tu objetivo principal es extraer la información solicitada usando consultas SQL exactas y presentar los resultados al usuario de una manera natural, legible y visualmente atractiva, ideal para leerse en la pantalla de un móvil a través de Telegram.\n\n### REGLAS DE ACCESO A LA BASE DE DATOS:\n1. NUNCA inventes, asumas ni adivines nombres de tablas o columnas. \n\n{{ $json.db_schema_prompt }}\n\n### REGLAS DE PRESENTACIÓN DE DATOS (MUESTREO Y UI):\n1. PROHIBIDO hacer volcados de datos crudos. \n2. Procesa y resume la información antes de mostrarla.\n3. Agrupa la información lógicamente. Por ejemplo, si hay varias reservaciones para un mismo día, agrúpalas bajo un encabezado de fecha.\n4. Oculta identificadores internos (como el ID numérico de la base de datos) a menos que sean estrictamente necesarios para que el usuario tome una acción o lo pida de manera explicita.\n5. Utiliza emojis con moderación para facilitar el escaneo visual de la información (ej. 📅 para fechas, 👤 para personas, ✅ para confirmadas, ❌ para canceladas, etcetera).\n\n### REGLAS ESTRICTAS DE FORMATO PARA TELEGRAM (CRÍTICO):\nDebes generar la respuesta usando texto plano con formato seguro, evitando caracteres que rompan la API de Telegram. Sigue estas reglas al pie de la letra:\n\n1. PROHIBIDO usar el carácter asterisco (`*`) para hacer listas o viñetas. Para listas, utiliza estrictamente el símbolo de punto (`•`), un guion regular (`-`) o emojis coherentes.\n2. PROHIBIDO usar símbolos de encabezado Markdown como `#`, `##` o `###`. Para hacer un título, simplemente usa negritas.\n3. Para poner texto en negrita, asegúrate de ABRIR y CERRAR correctamente los asteriscos. \n4. No uses bloques de código (```) a menos que vayas a mostrar código real.\n5. Evita usar caracteres especiales sueltos como corchetes `[ ]` o paréntesis `( )` con enlaces rotos.\n6. Asegurate de siempre usar como parte de la respuesta al usuario al menos 2 emojis coherentes con la pregunta y la respuesta."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        512,
+        16
+      ],
+      "id": "4e735cb8-e46d-433e-a180-94503c32b3af",
+      "name": "AI Agent",
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 5000
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "Utiliza esta herramienta para ejecutar consultas SQL de solo lectura (SELECT) en la base de datos PostgreSQL. Si no conoces el nombre exacto de una tabla o qué columnas tiene, ejecuta primero SELECT table_name FROM information_schema.tables WHERE table_schema = 'public'; para listar las tablas reales antes de hacer la consulta.",
+        "operation": "executeQuery",
+        "query": "{{ $fromAI('query') }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgresTool",
+      "typeVersion": 2.7,
+      "position": [
+        784,
+        240
+      ],
+      "id": "a1aa8636-f5d8-492f-962b-36269520f369",
+      "name": "Execute a SQL query in Postgres",
+      "credentials": {
+        "postgres": {
+          "id": "s4z3kb2LmcOpuzd4",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram Trigger').item.json.message.chat.id }}",
+        "text": "={{ $json.output }}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1040,
+        16
+      ],
+      "id": "43d0676f-a8bc-4cdd-9b69-8f624e886ed6",
+      "name": "Send a text message",
+      "webhookId": "593f4255-2e31-46d5-9ef8-e22e897c77da",
+      "credentials": {
+        "telegramApi": {
+          "id": "qcNffm2ce4HHP6dX",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": "llama-3.3-70b-versatile",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
+      "typeVersion": 1,
+      "position": [
+        448,
+        240
+      ],
+      "id": "76a4af92-eade-4490-aeb1-5c59498622b1",
+      "name": "Groq Chat Model",
+      "credentials": {
+        "groqApi": {
+          "id": "D2M8CVvvDNKVnSZ8",
+          "name": "Groq account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT \n    t.table_name,\n    json_agg(\n        json_build_object(\n            'column_name', c.column_name,\n            'data_type', c.data_type,\n            'is_nullable', c.is_nullable\n        ) ORDER BY c.ordinal_position\n    ) AS columns\nFROM information_schema.tables t\nJOIN information_schema.columns c \n  ON t.table_schema = c.table_schema \n AND t.table_name = c.table_name\nWHERE t.table_schema = 'public' \n  AND t.table_type = 'BASE TABLE'\nGROUP BY t.table_name\nORDER BY t.table_name;",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.7,
+      "position": [
+        160,
+        16
+      ],
+      "id": "75fce2b3-e8f7-435c-b4fe-9ca31a26c339",
+      "name": "Execute a SQL query",
+      "alwaysOutputData": false,
+      "credentials": {
+        "postgres": {
+          "id": "s4z3kb2LmcOpuzd4",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Agrupa todas las filas recibidas de Postgres en un solo texto Markdown\nlet schemaText = \"# ESQUEMA DE LA BASE DE DATOS POSTGRESQL\\n\\n\";\n\nfor (const item of $input.all()) {\n  const tableName = item.json.table_name;\n  const columns = item.json.columns;\n  \n  schemaText += `## Tabla: ${tableName}\\n`;\n  schemaText += `Columnas:\\n`;\n  \n  for (const col of columns) {\n    const nullable = col.is_nullable === 'YES' ? 'NULL' : 'NOT NULL';\n    schemaText += `  - ${col.column_name} (${col.data_type}, ${nullable})\\n`;\n  }\n  schemaText += `\\n`;\n}\n\nreturn [{\n  json: {\n    db_schema_prompt: schemaText\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        336,
+        16
+      ],
+      "id": "3c3138a3-013a-4e27-8d56-3cc547f3f7bf",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $('Telegram Trigger').item.json.message.chat.id.toString() }}",
+        "sessionTTL": 7200
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryRedisChat",
+      "typeVersion": 1.6,
+      "position": [
+        608,
+        240
+      ],
+      "id": "b1261203-e044-451a-8706-e9c014d2a483",
+      "name": "Redis Chat Memory",
+      "credentials": {
+        "redis": {
+          "id": "itZURlDLnVEx7BGz",
+          "name": "Redis account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Telegram Trigger": {
+      "main": [
+        [
+          {
+            "node": "Execute a SQL query",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Execute a SQL query in Postgres": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Send a text message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Groq Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Execute a SQL query": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Redis Chat Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "b62bebb9-5571-4ba7-9499-815bcb878bf7",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "db07dc1caea3f64f6c863329f5acae8d5b0c9e63153a6a4ef3adca7cb4b62738"
+  },
+  "nodeGroups": [],
+  "id": "yE8PgBxEppeQjNGW",
+  "tags": []
+}
