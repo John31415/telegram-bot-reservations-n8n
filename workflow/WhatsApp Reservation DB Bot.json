@@ -28,13 +28,13 @@
     },
     {
       "parameters": {
-        "model": "llama-3.3-70b-versatile",
+        "model": "openai/gpt-oss-120b",
         "options": {}
       },
       "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
       "typeVersion": 1,
       "position": [
-        432,
+        512,
         240
       ],
       "id": "76a4af92-eade-4490-aeb1-5c59498622b1",
@@ -78,7 +78,7 @@
       "typeVersion": 1.6,
       "position": [
         608,
-        240
+        400
       ],
       "id": "b1261203-e044-451a-8706-e9c014d2a483",
       "name": "Redis Chat Memory",
@@ -100,8 +100,8 @@
       "type": "n8n-nodes-base.postgresTool",
       "typeVersion": 2.7,
       "position": [
-        800,
-        240
+        736,
+        224
       ],
       "id": "a1aa8636-f5d8-492f-962b-36269520f369",
       "name": "Execute a SQL query in Postgres",
@@ -127,28 +127,6 @@
     },
     {
       "parameters": {
-        "chatId": "={{ $('Telegram Trigger').item.json.message.chat.id }}",
-        "text": "={{ $json.output }}",
-        "additionalFields": {}
-      },
-      "type": "n8n-nodes-base.telegram",
-      "typeVersion": 1.2,
-      "position": [
-        848,
-        16
-      ],
-      "id": "43d0676f-a8bc-4cdd-9b69-8f624e886ed6",
-      "name": "Send a text message",
-      "webhookId": "593f4255-2e31-46d5-9ef8-e22e897c77da",
-      "credentials": {
-        "telegramApi": {
-          "id": "qcNffm2ce4HHP6dX",
-          "name": "Telegram account"
-        }
-      }
-    },
-    {
-      "parameters": {
         "labelsMode": "array",
         "labelsArray": "={{ $json.output.labels }}",
         "data": "={{ $json.output.data }}",
@@ -158,8 +136,8 @@
       "type": "n8n-nodes-base.quickChart",
       "typeVersion": 1,
       "position": [
-        1152,
-        -384
+        1248,
+        16
       ],
       "id": "5420667d-b9d2-45a9-9cdf-fd7c91e28e4f",
       "name": "QuickChart"
@@ -172,22 +150,22 @@
       "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
       "typeVersion": 1.3,
       "position": [
-        1008,
-        -176
+        1120,
+        224
       ],
       "id": "03593b6b-80e5-4305-9064-17d0219a9e2b",
       "name": "Structured Output Parser"
     },
     {
       "parameters": {
-        "model": "llama-3.3-70b-versatile",
+        "model": "openai/gpt-oss-120b",
         "options": {}
       },
       "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
       "typeVersion": 1,
       "position": [
-        832,
-        -176
+        944,
+        224
       ],
       "id": "38369a38-71ae-4b03-b75f-86241cc24937",
       "name": "Groq Chat Model1",
@@ -203,7 +181,7 @@
         "promptType": "define",
         "text": "={{ $('Telegram Trigger').item.json.message.text }}",
         "options": {
-          "systemMessage": "=Eres un asistente inteligente y amable encargado de gestionar consultas de una base de datos PostgreSQL para un sistema de reservaciones. Tu objetivo principal es extraer la información solicitada usando consultas SQL exactas y presentar los resultados al usuario de una manera natural, legible y visualmente atractiva, ideal para leerse en la pantalla de un móvil a través de Telegram.\n\n### REGLAS DE ACCESO A LA BASE DE DATOS:\n1. NUNCA inventes, asumas ni adivines nombres de tablas o columnas. \n\n{{ $json.db_schema_prompt }}\n\n### REGLAS DE PRESENTACIÓN DE DATOS (MUESTREO Y UI):\n1. PROHIBIDO hacer volcados de datos crudos. \n2. Procesa y resume la información antes de mostrarla.\n3. Agrupa la información lógicamente. Por ejemplo, si hay varias reservaciones para un mismo día, agrúpalas bajo un encabezado de fecha.\n4. Oculta identificadores internos (como el ID numérico de la base de datos) a menos que sean estrictamente necesarios para que el usuario tome una acción o lo pida de manera explicita.\n5. Utiliza emojis con moderación para facilitar el escaneo visual de la información (ej. 📅 para fechas, 👤 para personas, ✅ para confirmadas, ❌ para canceladas, etcetera).\n\n### REGLAS ESTRICTAS DE FORMATO PARA TELEGRAM (CRÍTICO):\nDebes generar la respuesta usando texto plano con formato seguro, evitando caracteres que rompan la API de Telegram. Sigue estas reglas al pie de la letra:\n\n1. PROHIBIDO usar el carácter asterisco (`*`) para hacer listas o viñetas. Para listas, utiliza estrictamente el símbolo de punto (`•`), un guion regular (`-`) o emojis coherentes.\n2. PROHIBIDO usar símbolos de encabezado Markdown como `#`, `##` o `###`. Para hacer un título, simplemente usa negritas.\n3. Para poner texto en negrita, asegúrate de ABRIR y CERRAR correctamente los asteriscos. \n4. No uses bloques de código (```) a menos que vayas a mostrar código real.\n5. Evita usar caracteres especiales sueltos como corchetes `[ ]` o paréntesis `( )` con enlaces rotos.\n6. Asegurate de siempre usar como parte de la respuesta al usuario al menos 2 emojis coherentes con la pregunta y la respuesta."
+          "systemMessage": "=Eres un asistente inteligente y amable encargado de gestionar consultas de una base de datos PostgreSQL para un sistema de reservaciones. Tu objetivo principal es extraer la información solicitada usando consultas SQL exactas y presentar los resultados al usuario de una manera natural, legible y visualmente atractiva, ideal para leerse en la pantalla de un móvil a través de Telegram.\n\n### REGLAS DE ACCESO A LA BASE DE DATOS:\n1. NUNCA inventes, asumas ni adivines nombres de tablas o columnas. \n\n{{ $json.db_schema_prompt }}\n\n### REGLAS DE PRESENTACIÓN DE DATOS (MUESTREO Y UI):\n1. PROHIBIDO hacer volcados de datos crudos. \n2. Procesa y resume la información antes de mostrarla.\n3. Agrupa la información lógicamente. Por ejemplo, si hay varias reservaciones para un mismo día, agrúpalas bajo un encabezado de fecha.\n4. Oculta identificadores internos (como el ID numérico de la base de datos) a menos que sean estrictamente necesarios para que el usuario tome una acción o lo pida de manera explicita.\n5. Utiliza emojis con moderación para facilitar el escaneo visual de la información (ej. 📅 para fechas, 👤 para personas, ✅ para confirmadas, ❌ para canceladas, etcetera).\n\n### REGLAS ESTRICTAS DE FORMATO PARA TELEGRAM (CRÍTICO):\nTelegram NO utiliza el formato Markdown tradicional. Para evitar romper la API o mostrar caracteres extraños, debes formatear tu texto EXACTAMENTE bajo las siguientes reglas:\n\n1. NEGRITA: Utiliza UN SOLO asterisco para abrir y cerrar. \n   • CORRECTO: *Este texto está en negrita*\n   • PROHIBIDO: **Este texto está en negrita**\n2. CURSIVA: Utiliza UN SOLO guion bajo para abrir y cerrar.\n   • CORRECTO: _Este texto está en cursiva_\n   • PROHIBIDO: Usar asteriscos simples para cursiva.\n3. LISTAS Y VIÑETAS: PROHIBIDO usar el carácter asterisco (`*`) para hacer listas. Utiliza estrictamente el símbolo de punto (`•`), un guion regular (`-`) o emojis coherentes.\n4. ENCABEZADOS: PROHIBIDO usar símbolos de encabezado Markdown como `#`, `##` o `###`. Para simular un título, simplemente escríbelo en negrita (ej. *Título de la Sección*).\n5. BLOQUES DE CÓDIGO: No uses comillas invertidas triples (```) a menos que vayas a mostrar código de programación real.\n6. CARACTERES ESPECIALES: Evita usar corchetes `[ ]` o paréntesis `( )` sueltos, ya que Telegram los interpreta como enlaces rotos y esto generará un error en la API.\n7. EMOJIS: Asegúrate de siempre usar como parte de la respuesta al usuario al menos 2 emojis coherentes con la pregunta y la respuesta."
         }
       },
       "type": "@n8n/n8n-nodes-langchain.agent",
@@ -230,8 +208,8 @@
       "type": "@n8n/n8n-nodes-langchain.agent",
       "typeVersion": 3.1,
       "position": [
-        848,
-        -384
+        944,
+        16
       ],
       "id": "15339d1a-6ef2-4ae6-bfbd-2952ce79c14c",
       "name": "AI Agent Chart",
@@ -242,13 +220,17 @@
         "operation": "sendPhoto",
         "chatId": "={{ $('Telegram Trigger').item.json.message.chat.id }}",
         "binaryData": true,
-        "additionalFields": {}
+        "additionalFields": {
+          "caption": "={{ $('AI Agent DB').item.json.output.slice(0, 1020) + \"...\" }}",
+          "parse_mode": "Markdown",
+          "reply_to_message_id": "={{ $('Telegram Trigger').item.json.message.message_id }}"
+        }
       },
       "type": "n8n-nodes-base.telegram",
       "typeVersion": 1.2,
       "position": [
-        1744,
-        -384
+        1840,
+        16
       ],
       "id": "d0e5138a-6582-4302-94ed-bf879f2509d6",
       "name": "Send a photo message",
@@ -268,8 +250,8 @@
       "type": "n8n-nodes-base.extractFromFile",
       "typeVersion": 1.1,
       "position": [
-        1328,
-        -384
+        1424,
+        16
       ],
       "id": "2eeb152f-e7ea-445d-b4c4-4ba1d997178b",
       "name": "Extract from File"
@@ -283,8 +265,8 @@
       "type": "n8n-nodes-base.convertToFile",
       "typeVersion": 1.1,
       "position": [
-        1520,
-        -384
+        1616,
+        16
       ],
       "id": "afb243df-2b96-4d0b-9899-1d7309a15532",
       "name": "Convert to File"
@@ -398,11 +380,6 @@
             "node": "AI Agent Chart",
             "type": "main",
             "index": 0
-          },
-          {
-            "node": "Send a text message",
-            "type": "main",
-            "index": 0
           }
         ]
       ]
@@ -447,7 +424,7 @@
     "binaryMode": "separate",
     "availableInMCP": false
   },
-  "versionId": "0ec0dab5-8966-4d3b-a9ff-4eb49e650bf9",
+  "versionId": "75a17c79-4b6a-454d-85b4-9dbe5221cd08",
   "meta": {
     "templateCredsSetupCompleted": true,
     "instanceId": "db07dc1caea3f64f6c863329f5acae8d5b0c9e63153a6a4ef3adca7cb4b62738"
